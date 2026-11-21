@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/routes/app_router.dart';
+import '../../core/theme/app_colors.dart';
 import '../../viewmodels/auth_vm.dart';
 import '../../widgets/auth_scaffold.dart';
 
@@ -42,12 +43,13 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final auth = ref.watch(authProvider);
     final fe = auth.fieldErrors;
 
     return AuthScaffold(
       title: 'Daftar Akun Baru',
-      subtitle: 'Buat akun untuk mulai mengelola koleksi buku',
+      subtitle: 'Buat akun untuk mulai mengelola koleksi buku kampus',
       error: fe.isEmpty ? auth.error : null,
       children: [
         Form(
@@ -59,7 +61,7 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                 controller: _nameCtrl,
                 decoration: InputDecoration(
                   labelText: 'Nama Lengkap',
-                  hintText: 'e.g. John Doe',
+                  hintText: 'e.g. Mahasiswa / Dosen',
                   prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
                   errorText: fe['name'],
                   counterText: '',
@@ -72,8 +74,8 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
               TextFormField(
                 controller: _emailCtrl,
                 decoration: InputDecoration(
-                  labelText: 'Email',
-                  hintText: 'nama@example.com',
+                  labelText: 'Email Kampus',
+                  hintText: 'nama@kampus.ac.id',
                   prefixIcon: const Icon(Icons.alternate_email_rounded, size: 20),
                   errorText: fe['email'],
                 ),
@@ -83,7 +85,7 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                   final s = v?.trim() ?? '';
                   if (s.isEmpty) return 'Email wajib diisi';
                   if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(s)) {
-                    return 'Email tidak valid';
+                    return 'Format email tidak valid';
                   }
                   return null;
                 },
@@ -97,29 +99,45 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                   prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
                   errorText: fe['password'],
                   suffixIcon: IconButton(
-                    icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: 20),
+                    icon: Icon(
+                      _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      size: 20,
+                    ),
+                    tooltip: _obscure ? 'Lihat password' : 'Sembunyikan password',
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),
                 ),
                 obscureText: _obscure,
                 textInputAction: TextInputAction.next,
-                validator: (v) => (v == null || v.length < 8) ? 'Minimal 8 karakter' : null,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Password wajib diisi';
+                  if (v.length < 8) return 'Password minimal 8 karakter';
+                  return null;
+                },
               ),
               const SizedBox(height: 14),
               TextFormField(
                 controller: _confirmCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Konfirmasi Password',
-                  hintText: 'Ulangi password di atas',
+                  hintText: 'Ulangi password',
                   prefixIcon: Icon(Icons.lock_reset_rounded, size: 20),
                 ),
                 obscureText: _obscure,
                 textInputAction: TextInputAction.done,
                 onFieldSubmitted: (_) => _submit(),
-                validator: (v) => v != _passCtrl.text ? 'Password tidak cocok' : null,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Konfirmasi password wajib diisi';
+                  if (v != _passCtrl.text) return 'Konfirmasi password tidak cocok';
+                  return null;
+                },
               ),
               const SizedBox(height: 24),
-              LoadingButton(loading: auth.loading, label: 'Daftar Sekarang', onPressed: _submit),
+              LoadingButton(
+                loading: auth.loading,
+                label: 'Daftar Sekarang',
+                onPressed: _submit,
+              ),
               const SizedBox(height: 16),
               Center(
                 child: TextButton(
@@ -128,14 +146,17 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                     Navigator.pushReplacementNamed(context, AppRoutes.login);
                   },
                   child: RichText(
-                    text: const TextSpan(
-                      text: 'Sudah punya akun? ',
-                      style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                      ),
                       children: [
+                        const TextSpan(text: 'Sudah punya akun? '),
                         TextSpan(
                           text: 'Masuk di sini',
                           style: TextStyle(
-                            color: Color(0xFF2563EB),
+                            color: isDark ? AppColors.darkPrimary : AppColors.primary,
                             fontWeight: FontWeight.w700,
                           ),
                         ),

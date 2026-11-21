@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/routes/app_router.dart';
+import '../../core/theme/app_colors.dart';
 import '../../viewmodels/auth_vm.dart';
 
 /// Cek token tersimpan saat aplikasi dibuka → langsung ke daftar buku jika valid.
@@ -25,8 +26,10 @@ class _SplashViewState extends ConsumerState<SplashView> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -35,44 +38,49 @@ class _SplashViewState extends ConsumerState<SplashView> {
               width: 88,
               height: 88,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                gradient: LinearGradient(
+                  colors: isDark
+                      ? [AppColors.darkPrimary, const Color(0xFF0F766E)]
+                      : [AppColors.primary, const Color(0xFF115E59)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF2563EB).withValues(alpha: 0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
                 ],
               ),
-              child: const Icon(Icons.menu_book_rounded, size: 48, color: Colors.white),
+              child: const Icon(Icons.local_library_rounded, size: 48, color: Colors.white),
             ),
-            const SizedBox(height: 20),
-            const Text(
-              'Perpustakaan Digital',
+            const SizedBox(height: 24),
+            Text(
+              'Perpustakaan Kampus',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
+                color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
                 letterSpacing: -0.5,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Sistem Manajemen Buku Terintegrasi',
-              style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 36),
-            const SizedBox(
-              width: 28,
-              height: 28,
+            SizedBox(
+              width: 24,
+              height: 24,
               child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+                strokeWidth: 2.4,
+                color: isDark ? AppColors.darkPrimary : AppColors.primary,
               ),
             ),
           ],

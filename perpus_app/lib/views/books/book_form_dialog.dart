@@ -2,12 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/network/api_exception.dart';
+import '../../core/theme/app_colors.dart';
 import '../../models/book_model.dart';
 
 typedef BookSubmit = Future<ApiException?> Function(Map<String, dynamic> payload);
 
-/// Form tambah/edit buku. Dialog tetap terbuka jika backend menolak
-/// (mis. ISBN duplikat) dan menampilkan pesan error di field terkait.
+/// Form tambah/edit buku dengan validasi inline & styling Kampus Modern.
+/// Dialog tetap terbuka jika backend menolak (mis. ISBN duplikat) dan menampilkan pesan error.
 /// Return `true` saat berhasil disimpan.
 class BookFormDialog extends StatefulWidget {
   final BookModel? book; // null = create
@@ -90,34 +91,64 @@ class _BookFormDialogState extends State<BookFormDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isEdit = widget.book != null;
     final maxYear = DateTime.now().year;
 
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.border),
+      ),
       titlePadding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      actionsPadding: const EdgeInsets.fromLTRB(24, 8, 24, 18),
+      actionsPadding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
       title: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: isEdit ? const Color(0xFFFEF3C7) : const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(10),
+              color: isEdit
+                  ? (isDark ? const Color(0xFF451A03) : const Color(0xFFFEF3C7))
+                  : (isDark ? const Color(0xFF042F2E) : AppColors.primaryLight),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               isEdit ? Icons.edit_note_rounded : Icons.library_add_rounded,
-              color: isEdit ? const Color(0xFFD97706) : const Color(0xFF2563EB),
-              size: 24,
+              color: isEdit
+                  ? (isDark ? const Color(0xFFFBBF24) : AppColors.accent)
+                  : (isDark ? AppColors.darkPrimary : AppColors.primary),
+              size: 22,
             ),
           ),
-          const SizedBox(width: 12),
-          Text(isEdit ? 'Edit Buku' : 'Tambah Buku'),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isEdit ? 'Edit Rincian Buku' : 'Tambah Buku Baru',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  isEdit ? 'Perbarui informasi katalog buku' : 'Masukkan informasi buku ke sistem',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
       content: SizedBox(
-        width: 440,
+        width: 480,
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -129,18 +160,23 @@ class _BookFormDialogState extends State<BookFormDialog> {
                     margin: const EdgeInsets.only(bottom: 14),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFEF2F2),
-                      border: Border.all(color: const Color(0xFFFCA5A5)),
-                      borderRadius: BorderRadius.circular(10),
+                      color: isDark ? const Color(0xFF450A0A) : AppColors.stockZeroBg,
+                      border: Border.all(color: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFCA5A5)),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 18),
+                        Icon(Icons.error_outline_rounded,
+                            color: isDark ? const Color(0xFFF87171) : AppColors.stockZero, size: 18),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             _error!,
-                            style: const TextStyle(color: Color(0xFF991B1B), fontSize: 13, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF991B1B),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ],
@@ -149,7 +185,7 @@ class _BookFormDialogState extends State<BookFormDialog> {
                 _field(_titleCtrl, 'Judul', 'title', icon: Icons.title_rounded, required: true, maxLength: 255),
                 _field(_authorCtrl, 'Penulis', 'author', icon: Icons.person_outline_rounded, required: true, maxLength: 255),
                 _field(_publisherCtrl, 'Penerbit', 'publisher', icon: Icons.business_outlined, maxLength: 255),
-                _field(_isbnCtrl, 'ISBN', 'isbn', icon: Icons.qr_code_rounded, required: true, maxLength: 20),
+                _field(_isbnCtrl, 'ISBN', 'isbn', icon: Icons.qr_code_2_rounded, required: true, maxLength: 20),
                 _field(
                   _yearCtrl,
                   'Tahun Terbit',
@@ -183,17 +219,30 @@ class _BookFormDialogState extends State<BookFormDialog> {
       actions: [
         TextButton(
           onPressed: _saving ? null : () => Navigator.pop(context, false),
+          style: TextButton.styleFrom(
+            foregroundColor: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
           child: const Text('Batal'),
         ),
         FilledButton(
           onPressed: _saving ? null : _submit,
           style: FilledButton.styleFrom(
-            minimumSize: const Size(100, 42),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            backgroundColor: isDark ? AppColors.darkPrimary : AppColors.primary,
+            foregroundColor: Colors.white,
+            minimumSize: const Size(110, 44),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
           child: _saving
-              ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-              : Text(isEdit ? 'Simpan' : 'Tambah'),
+              ? const SizedBox(
+                  height: 18,
+                  width: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
+                )
+              : Text(
+                  isEdit ? 'Simpan' : 'Tambah',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
         ),
       ],
     );

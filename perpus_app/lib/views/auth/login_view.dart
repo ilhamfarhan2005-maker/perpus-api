@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/routes/app_router.dart';
+import '../../core/theme/app_colors.dart';
 import '../../viewmodels/auth_vm.dart';
 import '../../widgets/auth_scaffold.dart';
 
@@ -35,11 +36,12 @@ class _LoginViewState extends ConsumerState<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final auth = ref.watch(authProvider);
     final generalError = auth.fieldErrors.isEmpty ? auth.error : null;
 
     return AuthScaffold(
-      title: 'Perpustakaan',
+      title: 'Selamat Datang Kembali',
       subtitle: 'Masuk dengan akun terdaftar untuk mengelola buku',
       error: generalError,
       children: [
@@ -52,8 +54,8 @@ class _LoginViewState extends ConsumerState<LoginView> {
                 TextFormField(
                   controller: _emailCtrl,
                   decoration: InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'nama@example.com',
+                    labelText: 'Email Kampus',
+                    hintText: 'nama@kampus.ac.id',
                     prefixIcon: const Icon(Icons.alternate_email_rounded, size: 20),
                     errorText: auth.fieldErrors['email'],
                   ),
@@ -64,12 +66,12 @@ class _LoginViewState extends ConsumerState<LoginView> {
                     final s = v?.trim() ?? '';
                     if (s.isEmpty) return 'Email wajib diisi';
                     if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(s)) {
-                      return 'Email tidak valid';
+                      return 'Format email tidak valid';
                     }
                     return null;
                   },
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _passCtrl,
                   decoration: InputDecoration(
@@ -78,7 +80,11 @@ class _LoginViewState extends ConsumerState<LoginView> {
                     prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
                     errorText: auth.fieldErrors['password'],
                     suffixIcon: IconButton(
-                      icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: 20),
+                      icon: Icon(
+                        _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        size: 20,
+                      ),
+                      tooltip: _obscure ? 'Lihat password' : 'Sembunyikan password',
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
@@ -89,7 +95,11 @@ class _LoginViewState extends ConsumerState<LoginView> {
                   validator: (v) => (v == null || v.isEmpty) ? 'Password wajib diisi' : null,
                 ),
                 const SizedBox(height: 24),
-                LoadingButton(loading: auth.loading, label: 'Masuk Sekarang', onPressed: _submit),
+                LoadingButton(
+                  loading: auth.loading,
+                  label: 'Masuk Sekarang',
+                  onPressed: _submit,
+                ),
                 const SizedBox(height: 16),
                 Center(
                   child: TextButton(
@@ -98,14 +108,17 @@ class _LoginViewState extends ConsumerState<LoginView> {
                       Navigator.pushReplacementNamed(context, AppRoutes.register);
                     },
                     child: RichText(
-                      text: const TextSpan(
-                        text: 'Belum punya akun? ',
-                        style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                      text: TextSpan(
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                        ),
                         children: [
+                          const TextSpan(text: 'Belum punya akun? '),
                           TextSpan(
                             text: 'Daftar di sini',
                             style: TextStyle(
-                              color: Color(0xFF2563EB),
+                              color: isDark ? AppColors.darkPrimary : AppColors.primary,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
